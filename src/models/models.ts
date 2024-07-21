@@ -1,17 +1,19 @@
 interface User {
-    name: string,
-    email: string,
-    cellphone: string,
-    userId: string,
-    password: string,
-    organizationId: string,
-    position: string,
-    date: string,
-    profileUrl: string;
+  name: string;
+  email: string;
+  cellphone: string;
+  userId: string;
+  password: string;
+  organizationId: string;
+  organizationName: string;
+  position: string;
+  date: string;
+  profileUrl: string;
 }
 
 interface Organization {
   name: string;
+  adminName: string;
   adminEmail: string;
   adminCellphone: string;
   organizationId: string;
@@ -26,6 +28,7 @@ interface OrganizationLocation {
   latitude: number;
   longitude: number;
   organizationId: number;
+  organizationName: string;
   geoHash: string;
   date: string;
 }

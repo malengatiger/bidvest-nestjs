@@ -29,8 +29,7 @@ export class CloudStorageService {
         this.storage = admin.storage();
       }
       const bucketName = process.env.FIREBASE_STORAGE_BUCKET; // Get bucket name from .env
-      const mFilaName = `${organizationId}/${fileType}/${fileName}`;
-      const fileRef = this.storage.bucket(bucketName).file(mFilaName);
+      const fileRef = this.storage.bucket(bucketName).file(fileName);
       const contentType = this.extractContentType(fileName);
       await fileRef.save(file, {
         metadata: {
@@ -73,6 +72,8 @@ export class CloudStorageService {
         return "text/plain";
       case ".zip":
         return "application/zip";
+      case ".mp4": // Add this case for .mp4 files
+        return "video/mp4";
       default:
         return "application/octet-stream";
     }

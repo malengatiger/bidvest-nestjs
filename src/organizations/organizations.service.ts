@@ -1,61 +1,84 @@
-import { Injectable } from '@nestjs/common';
-import { FirestoreManager } from 'src/services/firestore_manager';
-import * as csvParser from 'csv-parser'; // Import csv-parser
-import { Readable } from 'stream';
+import { Injectable, Logger } from "@nestjs/common";
+import { FirestoreManager } from "src/services/firestore_manager";
+import { UserManager } from "src/services/user_manager";
 
-const organizationsCollection = 'organizations';
-
+const organizationsCollection = "Organizations";
+const mm = "💦 💦 💦 OrganizationsService 💦 ";
 @Injectable()
 export class OrganizationsService {
-  constructor(private readonly firestoreService: FirestoreManager) {}
+  constructor(private readonly firestoreManager: FirestoreManager, 
+    private readonly userManager: UserManager) {}
   async getOrganization(id: string) {
-    return await this.firestoreService.getDocument(
+    return await this.firestoreManager.getDocument(
       organizationsCollection,
       id,
+      "organizationId"
     );
   }
   async getOrganizations() {
-    return await this.firestoreService.getAllDocuments(organizationsCollection);
+    return await this.firestoreManager.getAllDocuments(organizationsCollection);
   }
   async createOrganization(organization: Organization) {
-    return await this.firestoreService.createDocument(
+    const org = await this.firestoreManager.getDocument(
       organizationsCollection,
-      organization,
+      organization.name,
+      "name"
     );
-  }
-  async createOrganizations(organization: Organization) {
-    return await this.firestoreService.createDocument(
-      organizationsCollection,
-      organization,
-    );
-  }
-  async addOrganizations(csvFile: File) {
-    try {
-      const organizations: Organization[] = [];
-      const buffer = await csvFile.arrayBuffer(); // Get the ArrayBuffer
-      const stream = Readable.from(Buffer.from(buffer)); // Create a Readable stream from the buffer
-      const parser = csvParser({});
-      stream
-        .pipe(parser)
-        .on('data', (row) => {
-          organizations.push(row as Organization);
-        })
-        .on('end', async () => {
-          for (const organization of organizations) {
-            await this.firestoreService.createDocument(
-              organizationsCollection,
-              organization,
-            );
-          }
-          return { message: 'Organizations added successfully' };
-        })
-        .on('error', (error) => {
-          console.error('Error parsing CSV:', error);
-          throw error;
-        });
-    } catch (error) {
-      console.error('Error adding organizations:', error);
-      throw error;
+    if (org) {
+      throw new Error(`${organization.name} ... already exists`);
     }
+    organization.organizationId = `${new Date().getTime()}`;
+    organization.date = new Date().toISOString();
+    const res = await this.firestoreManager.createDocument(
+      organizationsCollection,
+      organization
+    );
+    await this.buildUser(organization);
+    return res;
+  }
+
+  private async buildUser(organization: Organization) {
+    const user: User = {
+      name: organization.name,
+      email: organization.adminEmail,
+      password: organization.adminPassword,
+      organizationId: organization.organizationId,
+      organizationName: organization.name,
+      date: new Date().toISOString(),
+      cellphone: organization.adminCellphone,
+      userId: "",
+      position: "",
+      profileUrl: ""
+    };
+    Logger.debug(`${mm} admin user to authenticate: ${JSON.stringify(user)}`);
+    await this.userManager.createUser(user);
+  }
+
+  async addOrganizations(jsonData: any[]) {
+    Logger.debug(`${mm} processJsonData: ${JSON.stringify(jsonData)}`);
+    const orgs = [];
+    for (const j of jsonData) {
+      j.date = new Date().toISOString();
+      j.organizationId = `${new Date().getTime()}`;
+      j.date = new Date().toISOString();
+
+      const org = await this.firestoreManager.getDocument(
+        "Organizations",
+        j.name,
+        "name"
+      );
+      if (!org) {
+        const x = await this.firestoreManager.createDocument(
+          organizationsCollection,
+          j
+        );
+            await this.buildUser(j);
+        Logger.debug(`${mm} record processed:  💧 ${JSON.stringify(j)}`);
+        orgs.push(x);
+      } else {
+        Logger.debug(`${mm} org exists, ignored:  💧 ${org.name}`);
+      }
+    }
+    return orgs;
   }
 }

@@ -32,7 +32,9 @@ export abstract class MyUtils {
     } else {
       port = process.env.LOCAL_PORT;
     }
-    Logger.log(`${mm} port: ${port} 🍷🍷 `);
+    Logger.log(
+      `${mm} port from .env: ${port} node environment: 🍷🍷 ${process.env.NODE_ENV} 🍷🍷 `
+    );
     if (!port) {
       port = '8080';
     }

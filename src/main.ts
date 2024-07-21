@@ -11,7 +11,7 @@ import {
   FieldValue,
   Filter,
 } from "firebase-admin/firestore";
-const mm = " 🥝 🥝 🥝 Bidvest Backend  🍎";
+const mm = "🥝 🥝 🥝 Bidvest Backend App 🍎";
 console.log(`${mm} ... starting up ...`);
 
 const firebaseManager: FirebaseManager = new FirebaseManager();
@@ -34,6 +34,7 @@ async function bootstrap() {
   Logger.log(
     `${mm} Firebase initialized; expires in; 🔶🔶🔶 ${JSON.stringify(expiry)} days 🔶🔶🔶 `
   );
+  
   const db = getFirestore();
   const list = await db.listCollections();
 
@@ -44,8 +45,9 @@ async function bootstrap() {
   await firebaseManager.sendInitializationMessage();
   nestApp.useGlobalInterceptors(new ErrorsInterceptor());
 }
+
 bootstrap().then((r) =>
-  Logger.debug(
-    `${mm} Bidvest Backend Bootstrapping is complete. 💖💖💖 ... Let's do this! ${r}`
+  Logger.log(
+    `${mm} Bidvest Backend Bootstrapping is complete. 💖 💖 💖 ... Let's do this!!!`
   )
 );

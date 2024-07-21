@@ -3,6 +3,7 @@ export class Constants {
   public static readonly SPLASH_IMAGE = "SPLASH_IMAGE";
   public static readonly GENERIC_IMAGE = "GENERIC_IMAGE";
   public static readonly GENERIC_VIDEO = "GENERIC_VIDEO";
+  public static readonly DOCUMENT = "DOCUMENT";
 
   public static readonly admin = "admin";
 
@@ -13,6 +14,8 @@ export class Constants {
       return Constants.PROFILE_IMAGE;
     } else if (str.includes("image") || str.includes("picture")) {
       return Constants.GENERIC_IMAGE;
+    } else if (str.includes("file") || str.includes("document")) {
+      return Constants.DOCUMENT;
     } else if (
       str.includes("splash") ||
       str.includes("hero") ||

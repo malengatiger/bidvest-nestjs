@@ -1,25 +1,32 @@
-import { Injectable } from '@nestjs/common';
-import * as admin from 'firebase-admin';
-const mm = '🔴 🔴 🔴 FirestoreManager 🔴 ';
+import { Injectable, Logger } from "@nestjs/common";
+import * as admin from "firebase-admin";
+const mm = "🔴 🔴 🔴 FirestoreManager 🔴 ";
+
 @Injectable()
 export class FirestoreManager {
   private db: admin.firestore.Firestore;
 
-  // constructor(private readonly firestore: admin.firestore.Firestore) {
-  //   // Initialize Firestore database
-  //   this.db = firestore;
-  //   console.log(`${mm} Firestore database initialized: {this.db.databaseId}`);
-  // }
-
   // Get a document by ID
-  async getDocument(collectionName: string, documentId: string) {
+  async getDocument(collectionName: string, id: string, parameter: string) {
+    Logger.debug(
+      `${mm} getDocument:  🅿️ collectionName: ${collectionName}  
+      🅿️ parameter: ${parameter}  🅿️ id: ${id}`
+    );
     if (!this.db) {
       this.db = admin.firestore();
     }
-    const docRef = this.db.collection(collectionName).doc(documentId);
-    const doc = await docRef.get();
-    if (doc.exists) {
-      return doc.data();
+    const docRef = this.db
+      .collection(collectionName)
+      .where(parameter, "==", id)
+      .limit(1);
+
+    const querySnapshot = await docRef.get();
+    const docs = querySnapshot.docs.length;
+    const empty = querySnapshot.empty;
+    Logger.debug(`docs: ${docs} empty: ${empty}`);
+    
+    if (querySnapshot.docs.length > 0) {
+      return querySnapshot.docs[0].data();
     } else {
       return null;
     }
@@ -28,19 +35,17 @@ export class FirestoreManager {
   // Create a new document
   async createDocument(collectionName: string, data: any) {
     try {
-      console.log(
-        `${mm} ... creating document, collection: ${collectionName} 
-        🥝 data:${JSON.stringify(data)}`,
-      );
-       if (!this.db) {
-         this.db = admin.firestore();
-       }
+      if (!this.db) {
+        this.db = admin.firestore();
+      }
       const mx = this.db.collection(collectionName);
       const res = await mx.add(data);
-      console.log(`${mm} document created successfully: ${JSON.stringify(res)}`);
+      Logger.debug(
+        `${mm} ... document created successfully: ${JSON.stringify(res.path)}`
+      );
       return res;
     } catch (error) {
-      console.error(`${mm} Error creating document:`, error);
+      Logger.error(`${mm} Error creating document:`, error);
       throw new Error(`Failed to create Firestore document: ${error}`);
     }
   }
@@ -59,7 +64,16 @@ export class FirestoreManager {
 
   // Get all documents in a collection
   async getAllDocuments(collectionName: string): Promise<any[]> {
-    const querySnapshot = await this.db.collection(collectionName).get();
+    Logger.debug(`${mm} collectionName: ${collectionName}`);
+    if (!collectionName) {
+      throw new Error(`Missing collection name`);
+    }
+    if (!this.db) {
+      this.db = admin.firestore();
+    }
+    const colRef = this.db.collection(collectionName);
+    const querySnapshot = await colRef.get();
+
     const documents = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -70,7 +84,7 @@ export class FirestoreManager {
   // Get documents matching a query
   async getDocumentsByQuery(
     collectionName: string,
-    query: admin.firestore.Query,
+    query: admin.firestore.Query
   ): Promise<any[]> {
     const querySnapshot = await query.get();
     const documents = querySnapshot.docs.map((doc) => ({
@@ -85,7 +99,7 @@ export class FirestoreManager {
     collectionName: string,
     query: admin.firestore.Query,
     pageSize: number,
-    startAfter?: admin.firestore.DocumentSnapshot,
+    startAfter?: admin.firestore.DocumentSnapshot
   ) {
     let querySnapshot;
     if (startAfter) {
@@ -107,7 +121,7 @@ export class FirestoreManager {
   async getDocumentField(
     collectionName: string,
     documentId: string,
-    fieldName: string,
+    fieldName: string
   ) {
     const docRef = this.db.collection(collectionName).doc(documentId);
     const doc = await docRef.get();
@@ -122,11 +136,11 @@ export class FirestoreManager {
   async getDocumentByField(
     collectionName: string,
     fieldName: string,
-    fieldValue: any,
+    fieldValue: any
   ) {
     const querySnapshot = await this.db
       .collection(collectionName)
-      .where(fieldName, '==', fieldValue)
+      .where(fieldName, "==", fieldValue)
       .get();
     if (querySnapshot.empty) {
       return null;
@@ -141,20 +155,20 @@ export class FirestoreManager {
     fieldName: string,
     fieldValue: any,
     pageSize: number,
-    startAfter?: admin.firestore.DocumentSnapshot,
+    startAfter?: admin.firestore.DocumentSnapshot
   ) {
     let querySnapshot;
     if (startAfter) {
       querySnapshot = await this.db
         .collection(collectionName)
-        .where(fieldName, '==', fieldValue)
+        .where(fieldName, "==", fieldValue)
         .startAfter(startAfter)
         .limit(pageSize)
         .get();
     } else {
       querySnapshot = await this.db
         .collection(collectionName)
-        .where(fieldName, '==', fieldValue)
+        .where(fieldName, "==", fieldValue)
         .limit(pageSize)
         .get();
     }
@@ -175,14 +189,14 @@ export class FirestoreManager {
     fieldValue: any,
     pageSize: number,
     orderByField: string,
-    orderByDirection: 'asc' | 'desc',
-    startAfter?: admin.firestore.DocumentSnapshot,
+    orderByDirection: "asc" | "desc",
+    startAfter?: admin.firestore.DocumentSnapshot
   ) {
     let querySnapshot;
     if (startAfter) {
       querySnapshot = await this.db
         .collection(collectionName)
-        .where(fieldName, '==', fieldValue)
+        .where(fieldName, "==", fieldValue)
         .orderBy(orderByField, orderByDirection)
         .startAfter(startAfter)
         .limit(pageSize)
@@ -190,7 +204,7 @@ export class FirestoreManager {
     } else {
       querySnapshot = await this.db
         .collection(collectionName)
-        .where(fieldName, '==', fieldValue)
+        .where(fieldName, "==", fieldValue)
         .orderBy(orderByField, orderByDirection)
         .limit(pageSize)
         .get();

@@ -4,7 +4,7 @@ import * as admin from 'firebase-admin';
 import { MyUtils } from './my-utils';
 import { Constants } from './constants';
 
-const mm = '🍑 🍑 🍑 FirebaseService 🍑 ';
+const mm = '🍑 🍑 🍑 FirebaseManager 🍑 ';
 const firebaseConfig = {
   apiKey: "AIzaSyApMsjLVjhZlLK8DmhYNTvoJoyR8uYIWwE",
   authDomain: "bidvest-33-8eaf4.firebaseapp.com",
@@ -26,25 +26,25 @@ export class FirebaseManager {
   }
   async sendInitializationMessage() {
 
-    const date = MyUtils.formatISOStringDate(new Date().toISOString(),  'en');
+    const date = MyUtils.formatISOStringDate(new Date().toISOString(), 'en');
     const message: admin.messaging.Message = {
       topic: Constants.admin,
       data: {
         message:
-          '🍑🍑 Bidvest Backend Server (Node/NestJS) started OK! 🅿️ 🅿️ 🅿️',
+          '🍑 🍑 Bidvest Backend App started OK! 🅿️ 🅿️ 🅿️',
         date: date,
       },
       notification: {
         title: 'Bidvest Backend',
-        body: `Bidvest is running good! : ${date}
-        )}🅿️ 🅿️ 🅿️`,
+        body: `Bidvest Backend App is running good, Boss! : ${date}
+        )} 🅿️ 🅿️ 🅿️`,
       },
     };
 
     try {
       const response = await admin.messaging().send(message);
-      Logger.log(
-        `${mm} 🅿️ 🅿️ 🅿️ Successfully sent FCM message: \n🚺 🚺 🚺 ${JSON.stringify(
+      Logger.debug(
+        `${mm} 🅿️ 🅿️ 🅿️  Successfully sent FCM message: \n🚺 🚺 🚺 ${JSON.stringify(
           message,
         )} \n🚺 🚺 🚺 FCM response: ${response}`,
       );

@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
-import * as admin from 'firebase-admin';
-import { Firestore } from 'firebase-admin/firestore';
-import { CreateRequest } from 'firebase-admin/lib/auth/auth-config';
-import { FirestoreManager } from './firestore_manager';
-const mm = '💦 💦 💦  UserManager  💦 ';
+import { Injectable, Logger } from "@nestjs/common";
+import * as admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
+import { CreateRequest } from "firebase-admin/lib/auth/auth-config";
+import { FirestoreManager } from "./firestore_manager";
+const mm = "💦 💦 💦  UserManager  💦 ";
 @Injectable()
 export class UserManager {
   constructor(private readonly firestoreManager: FirestoreManager) {}
@@ -16,6 +16,11 @@ export class UserManager {
       if (!this.db) {
         this.db = admin.firestore();
       }
+      const u = await this.getUserByEmail(user.email);
+      if (u) {
+        throw new Error(`User already exists: ${JSON.stringify(user)}`);
+      }
+
       const req: CreateRequest = {
         displayName: user.name,
         email: user.email,
@@ -27,22 +32,22 @@ export class UserManager {
       if (userRec.uid) {
         user.userId = userRec.uid;
         console.log(
-          `${mm} Auth User created successfully: 🥬 🥬 ${JSON.stringify(user)}`,
+          `${mm} Auth User created successfully: 🥬 🥬 ${JSON.stringify(user)}`
         );
       } else {
         console.error(
-          `${mm} auth user creation failed: 👿👿👿 ${JSON.stringify(user)}`,
+          `${mm} auth user creation failed: 👿👿👿 ${JSON.stringify(user)}`
         );
         throw new Error(`Failed to create user.`);
       }
-      const userRef = await this.firestoreManager.createDocument('Users', user);
+      const userRef = await this.firestoreManager.createDocument("Users", user);
       Logger.log(
-        `${mm} Firestore User created successfully: ${JSON.stringify(userRef)}`,
+        `${mm} Firestore User created successfully: ${JSON.stringify(userRef)}`
       );
       return user;
     } catch (error) {
       console.error(`${mm} Error creating user:👿👿👿 `, error);
-      throw new Error('Failed to create user.');
+      throw new Error("Failed to create user.");
     }
   }
 
@@ -54,8 +59,8 @@ export class UserManager {
         this.db = admin.firestore();
       }
       const userDoc = await this.db
-        .collection('Users')
-        .where('organizationId', '==', organizationId) 
+        .collection("Users")
+        .where("organizationId", "==", organizationId)
         .get();
 
       const res = [];
@@ -64,9 +69,40 @@ export class UserManager {
       });
       return res;
     } catch (error) {
-      console.error('Error getting users:', error);
-      throw new Error('Failed to get users.');
+      console.error("Error getting users:", error);
+      throw new Error("Failed to get users.");
     }
+  }
+  async addOrganizationUsers(jsonData: any[], organizationId: string) {
+    Logger.debug(`${mm} addOrganizationUsers: ${JSON.stringify(jsonData)}`);
+    Logger.debug(`${mm} organizationId: ${organizationId}`);
+    let list = [];
+    const org = await this.firestoreManager.getDocument(
+      "Organizations",
+      organizationId,
+      "organizationId"
+    );
+    if (org) {
+      Logger.debug(`${mm} ... we good, Boss! there IS an Organization! ???`);
+    } else {
+      Logger.debug(`${mm} organization not found?? ${organizationId}`)
+      throw new Error(`Organization does not exist`);
+    }
+    for (const j of jsonData) {
+      j.date = new Date().toISOString();
+      j.organizationId = organizationId;
+      j.organizationName = org.name;
+      const u = await this.getUserByEmail(j.email);
+      Logger.debug(`${mm} user found by email? ${JSON.stringify(u)}`);
+      if (!u) {
+        const user = await this.createUser(j);
+        Logger.debug(`${mm} record processed: ${JSON.stringify(j)}`);
+        list.push(user);
+      } else {
+        Logger.error(`${mm} user exists already: ${JSON.stringify(u)}`);
+      }
+    }
+    return list;
   }
   async getUserByEmail(email: string): Promise<any> {
     try {
@@ -75,18 +111,19 @@ export class UserManager {
         this.db = admin.firestore();
       }
       const userDoc = await this.db
-        .collection('Users')
-        .where('email' == email)
+        .collection("Users")
+        .where("email", '==', email)
         .limit(1)
         .get();
-      if (userDoc.docs.length == 1) {
+
+      if (userDoc.docs.length > 0) {
         return userDoc.docs[0].data;
       } else {
         return null;
       }
     } catch (error) {
-      console.error('Error getting user:', error);
-      throw new Error('Failed to get user.');
+      console.error("Error getting user:", error);
+      throw new Error("Failed to get user.");
     }
   }
   async getUser(uid: string) {
@@ -95,7 +132,7 @@ export class UserManager {
       if (!this.db) {
         this.db = admin.firestore();
       }
-      const userRef = this.db.collection('Users').doc(uid);
+      const userRef = this.db.collection("Users").doc(uid);
       const userDoc = await userRef.get();
       if (userDoc.exists) {
         return userDoc.data();
@@ -103,8 +140,8 @@ export class UserManager {
         return null;
       }
     } catch (error) {
-      console.error('Error getting user:', error);
-      throw new Error('Failed to get user.');
+      console.error("Error getting user:", error);
+      throw new Error("Failed to get user.");
     }
   }
   async getAllUsers() {
@@ -113,14 +150,14 @@ export class UserManager {
       if (!this.db) {
         this.db = admin.firestore();
       }
-      const userRef = await this.db.collection('Users').get();
+      const userRef = await this.db.collection("Users").get();
       const users = [];
       userRef.docs.forEach((doc) => {
         users.push(doc.data);
       });
     } catch (error) {
       console.error(`${mm} Error getting users 👿👿👿 :`, error);
-      throw new Error('Failed to get user.');
+      throw new Error("Failed to get user.");
     }
   }
   // Handle password forgotten scenario
@@ -130,8 +167,8 @@ export class UserManager {
       Logger.log(`Password reset email sent to ${email} link: ${link}`);
       return link;
     } catch (error) {
-      console.error('Error sending password reset email:', error);
-      throw new Error('Failed to send password reset email.');
+      console.error("Error sending password reset email:", error);
+      throw new Error("Failed to send password reset email.");
     }
   }
   // Update user information
@@ -141,17 +178,17 @@ export class UserManager {
       if (!this.db) {
         this.db = admin.firestore();
       }
-      const userRef = this.db.collection('Users').doc(uid);
+      const userRef = this.db.collection("Users").doc(uid);
       await userRef.update(data);
 
       // Update user in Firebase Authentication (optional)
       // You can update displayName, email, photoURL, etc.
       // await admin.auth().updateUser(uid, { displayName: data.displayName });
 
-      return { message: 'User updated successfully' };
+      return { message: "User updated successfully" };
     } catch (error) {
-      console.error('Error updating user:', error);
-      throw new Error('Failed to update user.');
+      console.error("Error updating user:", error);
+      throw new Error("Failed to update user.");
     }
   }
 
@@ -162,16 +199,16 @@ export class UserManager {
       if (!this.db) {
         this.db = admin.firestore();
       }
-      const userRef = this.db.collection('Users').doc(uid);
+      const userRef = this.db.collection("Users").doc(uid);
       await userRef.delete();
 
       // Delete user from Firebase Authentication
       await admin.auth().deleteUser(uid);
 
-      return { message: 'User deleted successfully' };
+      return { message: "User deleted successfully" };
     } catch (error) {
-      console.error('Error deleting user:', error);
-      throw new Error('Failed to delete user.');
+      console.error("Error deleting user:", error);
+      throw new Error("Failed to delete user.");
     }
   }
 }
