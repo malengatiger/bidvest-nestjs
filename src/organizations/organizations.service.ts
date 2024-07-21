@@ -6,8 +6,10 @@ const organizationsCollection = "Organizations";
 const mm = "💦 💦 💦 OrganizationsService 💦 ";
 @Injectable()
 export class OrganizationsService {
-  constructor(private readonly firestoreManager: FirestoreManager, 
-    private readonly userManager: UserManager) {}
+  constructor(
+    private readonly firestoreManager: FirestoreManager,
+    private readonly userManager: UserManager
+  ) {}
   async getOrganization(id: string) {
     return await this.firestoreManager.getDocument(
       organizationsCollection,
@@ -48,7 +50,7 @@ export class OrganizationsService {
       cellphone: organization.adminCellphone,
       userId: "",
       position: "",
-      profileUrl: ""
+      profileUrl: "",
     };
     Logger.debug(`${mm} admin user to authenticate: ${JSON.stringify(user)}`);
     await this.userManager.createUser(user);
@@ -72,7 +74,7 @@ export class OrganizationsService {
           organizationsCollection,
           j
         );
-            await this.buildUser(j);
+        await this.buildUser(j);
         Logger.debug(`${mm} record processed:  💧 ${JSON.stringify(j)}`);
         orgs.push(x);
       } else {

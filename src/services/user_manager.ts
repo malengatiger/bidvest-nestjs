@@ -85,21 +85,21 @@ export class UserManager {
     if (org) {
       Logger.debug(`${mm} ... we good, Boss! there IS an Organization! ???`);
     } else {
-      Logger.debug(`${mm} organization not found?? ${organizationId}`)
+      Logger.debug(`${mm} organization not found?? ${organizationId}`);
       throw new Error(`Organization does not exist`);
     }
     for (const j of jsonData) {
       j.date = new Date().toISOString();
       j.organizationId = organizationId;
       j.organizationName = org.name;
-      const u = await this.getUserByEmail(j.email);
-      Logger.debug(`${mm} user found by email? ${JSON.stringify(u)}`);
-      if (!u) {
+      const mUser = await this.getUserByEmail(j.email);
+      Logger.debug(`${mm} user found by email? ${mUser.email}`);
+      if (!mUser) {
         const user = await this.createUser(j);
         Logger.debug(`${mm} record processed: ${JSON.stringify(j)}`);
         list.push(user);
       } else {
-        Logger.error(`${mm} user exists already: ${JSON.stringify(u)}`);
+        Logger.error(`${mm} user exists already: ${mUser.name}`);
       }
     }
     return list;
@@ -112,17 +112,17 @@ export class UserManager {
       }
       const userDoc = await this.db
         .collection("Users")
-        .where("email", '==', email)
+        .where("email", "==", email)
         .limit(1)
         .get();
 
       if (userDoc.docs.length > 0) {
-        return userDoc.docs[0].data;
+        return userDoc.docs[0].data();
       } else {
         return null;
       }
     } catch (error) {
-      console.error("Error getting user:", error);
+      Logger.error("Error getting user:", error);
       throw new Error("Failed to get user.");
     }
   }
