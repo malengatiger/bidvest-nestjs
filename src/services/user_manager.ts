@@ -49,18 +49,18 @@ export class UserManager {
   // Get user by UID
   async getOrganizationUsers(organizationId: string): Promise<any[]> {
     try {
-      // Get org users from Firestore
+      console.log(`${mm} ... getting org users: ${organizationId}`); // Get org users from Firestore
       if (!this.db) {
         this.db = admin.firestore();
       }
       const userDoc = await this.db
         .collection('Users')
-        .where('organizationId' == organizationId)
+        .where('organizationId', '==', organizationId) 
         .get();
 
       const res = [];
       userDoc.docs.forEach((doc) => {
-        res.push(doc.data);
+        res.push(doc.data());
       });
       return res;
     } catch (error) {
