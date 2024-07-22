@@ -3,6 +3,7 @@ import * as admin from "firebase-admin";
 import { Firestore } from "firebase-admin/firestore";
 import { CreateRequest } from "firebase-admin/lib/auth/auth-config";
 import { FirestoreManager } from "./firestore_manager";
+import { User } from "src/models/models";
 const mm = "💦 💦 💦  UserManager  💦 ";
 @Injectable()
 export class UserManager {
@@ -85,7 +86,7 @@ export class UserManager {
     if (org) {
       Logger.debug(`${mm} ... we good, Boss! there IS an Organization! ???`);
     } else {
-      Logger.debug(`${mm} organization not found?? ${organizationId}`);
+      Logger.debug(`${mm} organization not found?? : ${organizationId}`);
       throw new Error(`Organization does not exist`);
     }
     for (const j of jsonData) {

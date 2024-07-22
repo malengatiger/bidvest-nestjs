@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { User } from 'src/models/models';
 import { UserManager } from 'src/services/user_manager';
 
 @Injectable()

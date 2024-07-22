@@ -1,5 +1,6 @@
 import { Body, Controller, HttpException, HttpStatus, Post } from '@nestjs/common';
 import { OnboardingService } from './onboarding.service';
+import { Organization, User } from 'src/models/models';
 
 @Controller('onboarding')
 export class OnboardingController {

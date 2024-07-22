@@ -1,4 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { Organization, OrganizationBranding, User } from "src/models/models";
 import { FirestoreManager } from "src/services/firestore_manager";
 import { UserManager } from "src/services/user_manager";
 
@@ -82,5 +83,21 @@ export class OrganizationsService {
       }
     }
     return orgs;
+  }
+
+  async addOrganizationBranding(branding: OrganizationBranding) {
+    Logger.debug(`${mm} addOrganizationBranding: ${JSON.stringify(branding)}`);
+
+    try {
+      branding.date = new Date().toISOString();
+      branding.brandingId = `${new Date().getTime()}`;
+      const res = await this.firestoreManager.createDocument(
+        "OrganizationBranding",
+        branding
+      );
+      return res.path;
+    } catch (error) {
+      throw new Error(`Failed to add organization branding: ${error}`);
+    }
   }
 }

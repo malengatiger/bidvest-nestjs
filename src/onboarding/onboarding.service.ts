@@ -4,6 +4,7 @@ import * as csvParser from 'csv-parser'; // Import csv-parser
 import { Readable } from 'stream';
 import { FirestoreManager } from 'src/services/firestore_manager';
 import { Firestore } from 'firebase-admin/firestore';
+import { Organization, User } from 'src/models/models';
 const mm = '🍀🍀🍀 OnboardingService';
 @Injectable()
 export class OnboardingService {

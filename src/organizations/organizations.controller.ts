@@ -7,6 +7,7 @@ import {
   Res,
   UploadedFile,
   UseInterceptors,
+  Body,
 } from "@nestjs/common";
 import { OrganizationsService } from "./organizations.service";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -18,6 +19,7 @@ import { Constants } from "src/services/constants";
 import * as csvParser from "csv-parser"; // Import csv-parser
 import { Readable } from "stream";
 import * as fs from "fs";
+import { OrganizationBranding } from "src/models/models";
 const mm = "🥦🥦 OrganizationsController 🥦🥦";
 
 @Controller("organizations")
@@ -51,8 +53,11 @@ export class OrganizationsController {
           jsonData.push(jsonObject);
         })
         .on("end", async () => {
-         list = await this.userManager.addOrganizationUsers(jsonData, organizationId);
-          Logger.debug( `${mm} Organization users uploaded successfully`);
+          list = await this.userManager.addOrganizationUsers(
+            jsonData,
+            organizationId
+          );
+          Logger.debug(`${mm} Organization users uploaded successfully`);
         })
         .on("error", (error) => {
           Logger.error(`${mm} Error parsing CSV:`, error);
@@ -85,8 +90,10 @@ export class OrganizationsController {
         })
         .on("end", async () => {
           list = await this.organizationsService.addOrganizations(jsonData);
-          Logger.debug( `${mm} Organizations uploaded successfully: ${list.length}`);
-          return 
+          Logger.debug(
+            `${mm} Organizations uploaded successfully: ${list.length}`
+          );
+          return;
         })
         .on("error", (error) => {
           Logger.error(`${mm} Error parsing CSV:`, error);
@@ -98,12 +105,15 @@ export class OrganizationsController {
     }
     return list;
   }
-  @Post("/upload")
+  @Get("/getOrganizations")
+  async getOrganizations() {
+    return this.organizationsService.getOrganizations();
+  }
+  @Post("/uploadLogo")
   @UseInterceptors(FileInterceptor("file"))
-  async uploadFile(
+  async uploadLogo(
     @UploadedFile() file: Express.Multer.File,
-    @Query("organizationId") organizationId: string,
-    @Query("fileType") fileType: string
+    @Query("organizationId") organizationId: string
   ) {
     try {
       // Convert the file to a Buffer
@@ -114,17 +124,15 @@ export class OrganizationsController {
       if (!org) {
         throw new Error(`Organization not found: ${organizationId}`);
       }
-      const mmx = Constants.parse(fileType);
-      const fileName = `${org.name}/${mmx}/${file.originalname}`;
+      const fileName = `${org.name}/logo/${file.originalname}`;
       // Upload the file to Firebase Cloud Storage
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
         fileName,
-        organizationId,
-        fileType
+        organizationId
       );
 
-      Logger.debug(`${mm} File uploaded to Cloud Storage, url: ${publicUrl}`);
+      Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
       // Send the public URL as a response
       return publicUrl;
     } catch (error) {
@@ -132,8 +140,78 @@ export class OrganizationsController {
       throw new Error(`Failed to upload file: ${error}`);
     }
   }
-  @Get("/getOrganizations")
-  async getOrganizations() {
-    return this.organizationsService.getOrganizations();
+  @Post("/uploadSplashImage")
+  @UseInterceptors(FileInterceptor("file"))
+  async uploadSplashImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Query("organizationId") organizationId: string
+  ) {
+    try {
+      // Convert the file to a Buffer
+      const fileBuffer = file.buffer;
+      // Define the file name and bucket name
+      const org =
+        await this.organizationsService.getOrganization(organizationId);
+      if (!org) {
+        throw new Error(`Organization not found: ${organizationId}`);
+      }
+      const fileName = `${org.name}/splash/${file.originalname}`;
+      // Upload the file to Firebase Cloud Storage
+      const publicUrl = await this.cloudStorageService.uploadFile(
+        fileBuffer,
+        fileName,
+        organizationId
+      );
+
+      Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
+      // Send the public URL as a response
+      return publicUrl;
+    } catch (error) {
+      Logger.error(`${mm} Error uploading file:`, error);
+      throw new Error(`Failed to upload file: ${error}`);
+    }
+  }
+  @Post("/uploadBannerImage")
+  @UseInterceptors(FileInterceptor("file"))
+  async uploadBannerImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Query("organizationId") organizationId: string
+  ) {
+    try {
+      // Convert the file to a Buffer
+      const fileBuffer = file.buffer;
+      // Define the file name and bucket name
+      const org =
+        await this.organizationsService.getOrganization(organizationId);
+      if (!org) {
+        throw new Error(`Organization not found: ${organizationId}`);
+      }
+      const fileName = `${org.name}/banner/${file.originalname}`;
+      // Upload the file to Firebase Cloud Storage
+      const publicUrl = await this.cloudStorageService.uploadFile(
+        fileBuffer,
+        fileName,
+        organizationId
+      );
+
+      Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
+      // Send the public URL as a response
+      return publicUrl;
+    } catch (error) {
+      Logger.error(`${mm} Error uploading file:`, error);
+      throw new Error(`Failed to upload file: ${error}`);
+    }
+  }
+  @Post("/addOrganizationBranding")
+  async addOrganizationBranding(@Body() branding: any) {
+    Logger.debug(
+      `${mm}Adding organization branding: ${JSON.stringify(branding)}`
+    );
+    try {
+      return this.organizationsService.addOrganizationBranding(branding);
+    } catch (error) {
+      Logger.error(`${mm} Error adding organization branding:`, error);
+      throw error;
+    }
   }
 }

@@ -19,11 +19,10 @@ export class CloudStorageService {
     file: Buffer,
     fileName: string,
     organizationId: string,
-    fileType: string
   ): Promise<string> {
     try {
       Logger.debug(
-        `${mm} ... uploading file to Cloud Storage: orgId: ${organizationId} fileType: ${fileType}`
+        `${mm} ... uploading file to Cloud Storage: orgId: ${organizationId} }`
       );
       if (!this.storage) {
         this.storage = admin.storage();

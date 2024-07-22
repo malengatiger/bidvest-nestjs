@@ -1,4 +1,4 @@
-interface User {
+export interface User {
   name: string;
   email: string;
   cellphone: string;
@@ -11,7 +11,7 @@ interface User {
   profileUrl: string;
 }
 
-interface Organization {
+export interface Organization {
   name: string;
   adminName: string;
   adminEmail: string;
@@ -22,8 +22,27 @@ interface Organization {
   logoUrl: string;
   splashImageUrl: string;
 }
+export interface OrganizationBranding {
+  brandingId: string;
+  organizationId: string;
+  organizationName: string;
+  date: string;
+  logoUrl: string;
+  splashImageUrl: string;
+  bannerImageUrl: string;
+}
+export interface UserBranding {
+  brandingId: string;
+  userId: string;
+  userName: string;
+  organizationId: string;
+  organizationName: string;
+  date: string;
+  profileImageUrl: string;
+  splashImageUrl: string;
+}
 
-interface OrganizationLocation {
+export interface OrganizationLocation {
   name: string;
   latitude: number;
   longitude: number;
@@ -33,7 +52,7 @@ interface OrganizationLocation {
   date: string;
 }
 
-interface BidvestDivision {
+export interface BidvestDivision {
   name: string;
   adminEmail: string;
   adminCellphone: string;
@@ -42,14 +61,14 @@ interface BidvestDivision {
   date: string;
 }
 
-interface OrganizationBidvestDivision {
+export interface OrganizationBidvestDivision {
   divisionId: string;
   divisionName: string;
   organizationName: string;
   organizationId: string;
   orgDivisionId: string;
 }
-interface Usage {
+export interface Usage {
   userId: string;
   organizationId: string;
   name: string;
