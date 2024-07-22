@@ -76,3 +76,8 @@ export interface Usage {
   date: string;
 }
 
+export interface UploadResponse {
+  downloadUrl: string;
+  date: string;
+}
+

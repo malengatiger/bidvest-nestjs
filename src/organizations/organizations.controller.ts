@@ -19,7 +19,8 @@ import { Constants } from "src/services/constants";
 import * as csvParser from "csv-parser"; // Import csv-parser
 import { Readable } from "stream";
 import * as fs from "fs";
-import { OrganizationBranding } from "src/models/models";
+import { UploadResponse } from "src/models/models";
+import { FirestoreManager } from "src/services/firestore_manager";
 const mm = "🥦🥦 OrganizationsController 🥦🥦";
 
 @Controller("organizations")
@@ -27,7 +28,8 @@ export class OrganizationsController {
   constructor(
     private readonly organizationsService: OrganizationsService,
     private readonly cloudStorageService: CloudStorageService,
-    private readonly userManager: UserManager
+    private readonly userManager: UserManager,
+    private readonly firestore: FirestoreManager
   ) {}
 
   @Post("/uploadOrganizationUsers")
@@ -114,7 +116,7 @@ export class OrganizationsController {
   async uploadLogo(
     @UploadedFile() file: Express.Multer.File,
     @Query("organizationId") organizationId: string
-  ) {
+  ): Promise<UploadResponse> {
     try {
       // Convert the file to a Buffer
       const fileBuffer = file.buffer;
@@ -124,7 +126,9 @@ export class OrganizationsController {
       if (!org) {
         throw new Error(`Organization not found: ${organizationId}`);
       }
-      const fileName = `${org.name}/logo/${file.originalname}`;
+
+      const fName = `${new Date().getTime()}_${file.originalname}`;
+      const fileName = `${org.name}/logo/${fName}`;
       // Upload the file to Firebase Cloud Storage
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
@@ -134,7 +138,82 @@ export class OrganizationsController {
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
       // Send the public URL as a response
-      return publicUrl;
+      return { downloadUrl: publicUrl, date: new Date().toISOString() };
+    } catch (error) {
+      Logger.error(`${mm} Error uploading file:`, error);
+      throw new Error(`Failed to upload file: ${error}`);
+    }
+  }
+  @Post("/uploadUserProfileImage")
+  @UseInterceptors(FileInterceptor("file"))
+  async uploadUserProfileImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Query("userId") userId: string
+  ): Promise<UploadResponse> {
+    try {
+      // Convert the file to a Buffer
+      const fileBuffer = file.buffer;
+      // Define the file name and bucket name
+      const user = await this.firestore.getDocument("Users", userId, "userId");
+      if (!user) {
+        throw new Error(`User not found: ${userId}`);
+      }
+      
+      const fName = `${new Date().getTime()}_${file.originalname}`;
+      const fileName = `${user.name}/userProfile/${fName}`;
+      // Upload the file to Firebase Cloud Storage
+      const publicUrl = await this.cloudStorageService.uploadFile(
+        fileBuffer,
+        fileName,
+        userId
+      );
+
+      Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
+      // Send the public URL as a response
+      return { downloadUrl: publicUrl, date: new Date().toISOString() };
+    } catch (error) {
+      Logger.error(`${mm} Error uploading file:`, error);
+      throw new Error(`Failed to upload file: ${error}`);
+    }
+  }
+  @Post("/uploadUserSplashImage")
+  @UseInterceptors(FileInterceptor("file"))
+  async uploadUserSplashImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Query("userId") userId: string
+  ): Promise<UploadResponse> {
+    try {
+      // Convert the file to a Buffer
+      const fileBuffer = file.buffer;
+      // Define the file name and bucket name
+      const user = await this.firestore.getDocument("Users", userId, "userId");
+      if (!user) {
+        throw new Error(`User not found: ${userId}`);
+      }
+      const org = await this.firestore.getDocument(
+        "Organizations",
+        user.organizationId,
+        "organizationId"
+      );
+      if (!user) {
+        throw new Error(`User not found: ${userId}`);
+      }
+
+      const fName = `${new Date().getTime()}_${file.originalname}`;
+      const fileName = `${user.name}/userProfile/${fName}`;
+      // Upload the file to Firebase Cloud Storage
+      const publicUrl = await this.cloudStorageService.uploadFile(
+        fileBuffer,
+        fileName,
+        org.organization
+      );
+
+      Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
+      // Send the public URL as a response
+      return {
+        downloadUrl: publicUrl,
+        date: new Date().toISOString(),
+      };
     } catch (error) {
       Logger.error(`${mm} Error uploading file:`, error);
       throw new Error(`Failed to upload file: ${error}`);
@@ -145,7 +224,7 @@ export class OrganizationsController {
   async uploadSplashImage(
     @UploadedFile() file: Express.Multer.File,
     @Query("organizationId") organizationId: string
-  ) {
+  ): Promise<UploadResponse> {
     try {
       // Convert the file to a Buffer
       const fileBuffer = file.buffer;
@@ -155,7 +234,9 @@ export class OrganizationsController {
       if (!org) {
         throw new Error(`Organization not found: ${organizationId}`);
       }
-      const fileName = `${org.name}/splash/${file.originalname}`;
+
+      const fName = `${new Date().getTime()}_${file.originalname}`;
+      const fileName = `${org.name}/splash/${fName}`;
       // Upload the file to Firebase Cloud Storage
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
@@ -165,7 +246,7 @@ export class OrganizationsController {
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
       // Send the public URL as a response
-      return publicUrl;
+      return { downloadUrl: publicUrl, date: new Date().toISOString() };
     } catch (error) {
       Logger.error(`${mm} Error uploading file:`, error);
       throw new Error(`Failed to upload file: ${error}`);
@@ -176,7 +257,7 @@ export class OrganizationsController {
   async uploadBannerImage(
     @UploadedFile() file: Express.Multer.File,
     @Query("organizationId") organizationId: string
-  ) {
+  ): Promise<UploadResponse> {
     try {
       // Convert the file to a Buffer
       const fileBuffer = file.buffer;
@@ -186,7 +267,9 @@ export class OrganizationsController {
       if (!org) {
         throw new Error(`Organization not found: ${organizationId}`);
       }
-      const fileName = `${org.name}/banner/${file.originalname}`;
+
+      const fName = `${new Date().getTime()}_${file.originalname}`;
+      const fileName = `${org.name}/banner/${fName}`;
       // Upload the file to Firebase Cloud Storage
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
@@ -196,7 +279,7 @@ export class OrganizationsController {
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
       // Send the public URL as a response
-      return publicUrl;
+      return { downloadUrl: publicUrl, date: new Date().toISOString() };
     } catch (error) {
       Logger.error(`${mm} Error uploading file:`, error);
       throw new Error(`Failed to upload file: ${error}`);
@@ -214,8 +297,20 @@ export class OrganizationsController {
       throw error;
     }
   }
+  @Post("/addUserBranding")
+  async addUserBranding(@Body() branding: any) {
+    Logger.debug(`${mm}Adding user branding: ${JSON.stringify(branding)}`);
+    try {
+      return this.organizationsService.addUserBranding(branding);
+    } catch (error) {
+      Logger.error(`${mm} Error adding user branding:`, error);
+      throw error;
+    }
+  }
   @Get("/getOrganizationBranding")
-  async getOrganizationBranding(@Query("organizationId") organizationId: string) {
+  async getOrganizationBranding(
+    @Query("organizationId") organizationId: string
+  ) {
     Logger.debug(`${mm} Getting organization branding: ${organizationId}`);
     try {
       return this.organizationsService.getOrganizationBranding(organizationId);
@@ -223,6 +318,14 @@ export class OrganizationsController {
       Logger.error(`${mm} Error getting organization branding:`, error);
       throw error;
     }
-
+  }
+  @Get("/getUserBranding")
+  async getOUserBranding(@Query("userId") userId: string) {
+    try {
+      return this.organizationsService.getUserBranding(userId);
+    } catch (error) {
+      Logger.error(`${mm} Error getting user branding:`, error);
+      throw error;
+    }
   }
 }

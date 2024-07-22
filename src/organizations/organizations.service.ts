@@ -1,9 +1,14 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { Organization, OrganizationBranding, User } from "src/models/models";
+import { Organization, OrganizationBranding, User, UserBranding } from "src/models/models";
 import { FirestoreManager } from "src/services/firestore_manager";
 import { UserManager } from "src/services/user_manager";
 
-const organizationsCollection = "Organizations";
+const organizations = "Organizations";
+const organizationBranding = "OrganizationBranding";
+const userBranding = "UserBranding";
+const users = "Users";
+
+
 const mm = "💦 💦 💦 OrganizationsService 💦 ";
 @Injectable()
 export class OrganizationsService {
@@ -13,21 +18,31 @@ export class OrganizationsService {
   ) {}
   async getOrganization(id: string) {
     return await this.firestoreManager.getDocument(
-      organizationsCollection,
+      organizations,
       id,
       "organizationId"
     );
   }
   async getOrganizations() {
-    return await this.firestoreManager.getAllDocuments(organizationsCollection);
+    return await this.firestoreManager.getAllDocuments(organizations);
   }
   async getOrganizationBranding(organizationId: string) {
     return await this.firestoreManager.getDocuments(
-      'OrganizationBranding', organizationId, "organizationId");
+      organizationBranding,
+      organizationId,
+      "organizationId"
+    );
+  }
+  async getUserBranding(userId: string) {
+    return await this.firestoreManager.getDocuments(
+      userBranding,
+      userId,
+      "userId"
+    );
   }
   async createOrganization(organization: Organization) {
     const org = await this.firestoreManager.getDocument(
-      organizationsCollection,
+      organizations,
       organization.name,
       "name"
     );
@@ -37,7 +52,7 @@ export class OrganizationsService {
     organization.organizationId = `${new Date().getTime()}`;
     organization.date = new Date().toISOString();
     const res = await this.firestoreManager.createDocument(
-      organizationsCollection,
+      organizations,
       organization
     );
     await this.buildUser(organization);
@@ -70,13 +85,13 @@ export class OrganizationsService {
       j.date = new Date().toISOString();
 
       const org = await this.firestoreManager.getDocument(
-        "Organizations",
+        organizations,
         j.name,
         "name"
       );
       if (!org) {
         const x = await this.firestoreManager.createDocument(
-          organizationsCollection,
+          organizations,
           j
         );
         await this.buildUser(j);
@@ -96,10 +111,53 @@ export class OrganizationsService {
       branding.date = new Date().toISOString();
       branding.brandingId = `${new Date().getTime()}`;
       const res = await this.firestoreManager.createDocument(
-        "OrganizationBranding",
+        organizationBranding,
         branding
       );
-      return res.path;
+      Logger.debug(
+        `${mm} OrganizationBranding processed:  💧 ${JSON.stringify(branding)}`
+      );
+      return branding;
+    } catch (error) {
+      throw new Error(`Failed to add organization branding: ${error}`);
+    }
+  }
+  async addUserBranding(branding: UserBranding) {
+    Logger.debug(`${mm} addUserBranding: ${JSON.stringify(branding)}`);
+
+    try {
+      const user = await this.firestoreManager.getDocument(
+        users,
+        branding.userId,
+        "userId"
+      );
+      if (!user) {
+        throw new Error(`User does not exist: ${branding.userId}`);
+      }
+      const org = await this.firestoreManager.getDocument(
+        organizations,
+        user.organizationId,
+        "organizationId"
+      );
+      if (!org) {
+        throw new Error(
+          `Organization does not exist: ${branding.organizationId}`
+        );
+      }
+
+      branding.date = new Date().toISOString();
+      branding.brandingId = `${new Date().getTime()}`;
+      branding.userName = user.name;
+      branding.organizationName = org.name;
+
+      const res = await this.firestoreManager.createDocument(
+        userBranding,
+        branding
+      );
+      Logger.debug(
+        `${mm} UserBranding processed:  💧 ${JSON.stringify(branding)}`
+      );
+      return branding;
     } catch (error) {
       throw new Error(`Failed to add organization branding: ${error}`);
     }
