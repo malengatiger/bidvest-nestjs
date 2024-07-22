@@ -214,4 +214,15 @@ export class OrganizationsController {
       throw error;
     }
   }
+  @Get("/getOrganizationBranding")
+  async getOrganizationBranding(@Query("organizationId") organizationId: string) {
+    Logger.debug(`${mm} Getting organization branding: ${organizationId}`);
+    try {
+      return this.organizationsService.getOrganizationBranding(organizationId);
+    } catch (error) {
+      Logger.error(`${mm} Error getting organization branding:`, error);
+      throw error;
+    }
+
+  }
 }

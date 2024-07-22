@@ -21,6 +21,10 @@ export class OrganizationsService {
   async getOrganizations() {
     return await this.firestoreManager.getAllDocuments(organizationsCollection);
   }
+  async getOrganizationBranding(organizationId: string) {
+    return await this.firestoreManager.getDocuments(
+      'OrganizationBranding', organizationId, "organizationId");
+  }
   async createOrganization(organization: Organization) {
     const org = await this.firestoreManager.getDocument(
       organizationsCollection,

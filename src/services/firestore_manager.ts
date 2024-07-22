@@ -24,12 +24,37 @@ export class FirestoreManager {
     const docs = querySnapshot.docs.length;
     const empty = querySnapshot.empty;
     Logger.debug(`docs: ${docs} empty: ${empty}`);
-    
+
     if (querySnapshot.docs.length > 0) {
       return querySnapshot.docs[0].data();
     } else {
       return null;
     }
+  }
+  async getDocuments(collectionName: string, id: string, parameter: string) {
+    Logger.debug(
+      `${mm} getDocuments:  \n🅿️ collectionName: ${collectionName}  
+     \n🅿️ parameter: ${parameter}  \n🅿️ id: ${id}`
+    );
+    if (!this.db) {
+      this.db = admin.firestore();
+    }
+    const docRef = this.db
+      .collection(collectionName)
+      .where(parameter, "==", id)
+
+    const querySnapshot = await docRef.get();
+    const docs = querySnapshot.docs.length;
+    const empty = querySnapshot.empty;
+    Logger.debug(
+      `${mm} ${collectionName}:  🥦 🥦 docs from querySnapshot: ${docs} empty: ${empty}`
+    );
+
+    const list = [];
+    querySnapshot.docs.forEach((doc) => {
+      list.push(doc.data());
+    });
+    return list;
   }
 
   // Create a new document
