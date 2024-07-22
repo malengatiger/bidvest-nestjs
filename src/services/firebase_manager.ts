@@ -29,7 +29,7 @@ export class FirebaseManager {
     try {
       const response = await admin.messaging().send(message);
       Logger.debug(
-        `${mm} 🅿️ 🅿️ 🅿️  Successfully sent FCM message: \n🚺 🚺 🚺 ${JSON.stringify(
+        `${mm} 🅿️ 🅿️ 🅿️  Successfully sent FCM message : \n🚺 🚺 🚺 ${JSON.stringify(
           message,
         )} \n🚺 🚺 🚺 FCM response: ${response}`,
       );

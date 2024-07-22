@@ -133,7 +133,6 @@ export class OrganizationsController {
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
         fileName,
-        organizationId
       );
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
@@ -158,14 +157,21 @@ export class OrganizationsController {
       if (!user) {
         throw new Error(`User not found: ${userId}`);
       }
-      
+      const org = await this.firestore.getDocument(
+        "Organizations",
+        user.organizationId,
+        "organizationId"
+      );
+      if (!org) {
+        throw new Error(`Organization not found: ${user.organizationId}`);
+      }
+
       const fName = `${new Date().getTime()}_${file.originalname}`;
-      const fileName = `${user.name}/userProfile/${fName}`;
+      const fileName = `${org.name}/${user.name}/userProfile/${fName}`;
       // Upload the file to Firebase Cloud Storage
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
         fileName,
-        userId
       );
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
@@ -195,17 +201,16 @@ export class OrganizationsController {
         user.organizationId,
         "organizationId"
       );
-      if (!user) {
-        throw new Error(`User not found: ${userId}`);
+      if (!org) {
+        throw new Error(`Organization not found: ${user.organizationId}`);
       }
 
       const fName = `${new Date().getTime()}_${file.originalname}`;
-      const fileName = `${user.name}/userProfile/${fName}`;
+      const fileName = `${org.name}/${user.name}/userProfile/${fName}`;
       // Upload the file to Firebase Cloud Storage
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
         fileName,
-        org.organization
       );
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
@@ -241,7 +246,6 @@ export class OrganizationsController {
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
         fileName,
-        organizationId
       );
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
@@ -274,7 +278,6 @@ export class OrganizationsController {
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
         fileName,
-        organizationId
       );
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
@@ -324,7 +327,7 @@ export class OrganizationsController {
     try {
       return this.organizationsService.getUserBranding(userId);
     } catch (error) {
-      Logger.error(`${mm} Error getting user branding:`, error);
+      Logger.error(`${mm} Error getting user branding :`, error);
       throw error;
     }
   }

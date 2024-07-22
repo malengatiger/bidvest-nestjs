@@ -18,11 +18,10 @@ export class CloudStorageService {
   async uploadFile(
     file: Buffer,
     fileName: string,
-    organizationId: string,
   ): Promise<string> {
     try {
       Logger.debug(
-        `${mm} ... uploading file to Cloud Storage: orgId: ${organizationId} }`
+        `${mm} ... uploading file to Cloud Storage }`
       );
       if (!this.storage) {
         this.storage = admin.storage();
