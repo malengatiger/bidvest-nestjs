@@ -8,7 +8,15 @@ export interface User {
   organizationName: string;
   position: string;
   date: string;
-  profileUrl: string;
+}
+export interface BidvestUser {
+  name: string;
+  email: string;
+  cellphone: string;
+  userId: string;
+  password: string;
+  date: string;
+  divisionId: string
 }
 
 export interface Organization {

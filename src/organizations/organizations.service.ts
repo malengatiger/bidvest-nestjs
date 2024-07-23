@@ -70,7 +70,6 @@ export class OrganizationsService {
       cellphone: organization.adminCellphone,
       userId: "",
       position: "",
-      profileUrl: "",
     };
     Logger.debug(`${mm} admin user to authenticate: ${JSON.stringify(user)}`);
     await this.userManager.createUser(user);

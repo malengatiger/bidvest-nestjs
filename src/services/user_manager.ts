@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 import { Firestore } from "firebase-admin/firestore";
 import { CreateRequest } from "firebase-admin/lib/auth/auth-config";
 import { FirestoreManager } from "./firestore_manager";
-import { User } from "src/models/models";
+import { BidvestUser, User } from "src/models/models";
 const mm = "💦 💦 💦  UserManager  💦 ";
 @Injectable()
 export class UserManager {
@@ -11,7 +11,53 @@ export class UserManager {
   private db: admin.firestore.Firestore;
 
   // Create a new user
-  async createUser(user: User) {
+  async createBidvestUser(user: BidvestUser): Promise<any> {
+    try {
+      console.log(`${mm} ... creating user: ${JSON.stringify(user)}`); // Create user in Firebase Authentication
+      if (!this.db) {
+        this.db = admin.firestore();
+      }
+      const u = await this.getBidvestUserByEmail(user.email);
+      if (u) {
+        throw new Error(`BidvestUser already exists: ${JSON.stringify(user)}`);
+      }
+
+      const req: CreateRequest = {
+        displayName: user.name,
+        email: user.email,
+        password: user.password,
+      };
+      //
+      const userRec = await admin.auth().createUser(req);
+      // Create user in Firestore
+      if (userRec.uid) {
+        user.userId = userRec.uid;
+        console.log(
+          `${mm} Auth User created successfully: 🥬 🥬 ${JSON.stringify(user)}`
+        );
+      } else {
+        console.error(
+          `${mm} auth user creation failed: 👿👿👿 ${JSON.stringify(user)}`
+        );
+        throw new Error(`Failed to create user.`);
+      }
+      const passwd = user.password;
+      user.password = "";
+      const userRef = await this.firestoreManager.createDocument(
+        "BidvestUsers",
+        user
+      );
+      Logger.log(
+        `${mm} Firestore User created successfully: ${JSON.stringify(userRef)}`
+      );
+      user.password = passwd;
+      return user;
+    } catch (error) {
+      console.error(`${mm} Error creating user:👿👿👿 `, error);
+      throw new Error("Failed to create user.");
+    }
+  }
+  async createUser(user: User): Promise<any> {
     try {
       console.log(`${mm} ... creating user: ${JSON.stringify(user)}`); // Create user in Firebase Authentication
       if (!this.db) {
@@ -41,17 +87,19 @@ export class UserManager {
         );
         throw new Error(`Failed to create user.`);
       }
+      const passwd = user.password;
+      user.password = "";
       const userRef = await this.firestoreManager.createDocument("Users", user);
       Logger.log(
         `${mm} Firestore User created successfully: ${JSON.stringify(userRef)}`
       );
+      user.password = passwd;
       return user;
     } catch (error) {
       console.error(`${mm} Error creating user:👿👿👿 `, error);
       throw new Error("Failed to create user.");
     }
   }
-
   // Get user by UID
   async getOrganizationUsers(organizationId: string): Promise<any[]> {
     try {
@@ -127,7 +175,29 @@ export class UserManager {
       throw new Error("Failed to get user.");
     }
   }
-  async getUser(uid: string) {
+  async getBidvestUserByEmail(email: string): Promise<any> {
+    try {
+      // Get user from Firestore
+      if (!this.db) {
+        this.db = admin.firestore();
+      }
+      const userDoc = await this.db
+        .collection("BidvestUsers")
+        .where("email", "==", email)
+        .limit(1)
+        .get();
+
+      if (userDoc.docs.length > 0) {
+        return userDoc.docs[0].data();
+      } else {
+        return null;
+      }
+    } catch (error) {
+      Logger.error("Error getting user:", error);
+      throw new Error("Failed to get user.");
+    }
+  }
+  async getUser(uid: string): Promise<any> {
     try {
       // Get user from Firestore
       if (!this.db) {
@@ -145,7 +215,7 @@ export class UserManager {
       throw new Error("Failed to get user.");
     }
   }
-  async getAllUsers() {
+  async getAllUsers(): Promise<any> {
     try {
       // Get user from Firestore
       if (!this.db) {
@@ -162,7 +232,7 @@ export class UserManager {
     }
   }
   // Handle password forgotten scenario
-  async sendPasswordResetEmail(email: string) {
+  async sendPasswordResetEmail(email: string): Promise<any> {
     try {
       const link = await admin.auth().generatePasswordResetLink(email);
       Logger.log(`Password reset email sent to ${email} link: ${link}`);
