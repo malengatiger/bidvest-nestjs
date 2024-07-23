@@ -25,14 +25,15 @@ export class ElapsedTimeMiddleware implements NestMiddleware {
       );
       if (res.statusCode > 201) {
         //send message & write to database
-        const x: KasieError = new KasieError(
-          res.statusCode,
-          "Error on Bidvest Backend",
-          req.originalUrl
-        );
-        await this.firestore.createDocument("Errors", { error: x });
-        Logger.debug(`${mm} KasieError added to database `);
-        await this.firebaseManager.sendMessage('errorsTopic', JSON.stringify(x));
+        const error = {
+          status: res.statusCode,
+          message: `🔴 🔴 🔴 Error on Bidvest Backend: ${res.statusMessage}`,
+          path: req.originalUrl,
+          date: new Date().toISOString(),
+        };
+        await this.firestore.createDocument("SystemErrors", error);
+        Logger.debug(`${mm} SystemError added to database `);
+        await this.firebaseManager.sendMessage('errorsTopic', JSON.stringify(error));
       }
     });
 

@@ -54,7 +54,7 @@ export class FirebaseManager {
       Logger.debug(
         `${mm} 🅿️ 🅿️ 🅿️  Successfully sent FCM message : \n🚺 🚺 🚺 ${
           message
-        } \n🚺 🚺 🚺 FCM response: ${response}`
+        } `
       );
     } catch (error) {
       console.error("Error sending message:", error);

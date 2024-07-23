@@ -9,4 +9,9 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('/getSystemErrors')
+  async getSystemErrors() : Promise<any>{
+    return this,this.appService.getSystemErrors();
+  }
 }

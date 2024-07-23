@@ -20,7 +20,8 @@ async function bootstrap() {
 
   const nestApp = await NestFactory.create(AppModule);
   const port = MyUtils.getPort();
-  Logger.log(`${mm} ... Bidvest Backend running on port : ${port} `);
+  const environment = process.env.NODE_ENV;
+  Logger.log(`${mm} ... Bidvest Backend running on port : ${port} environment: ${environment}`);
 
   // app.use(helmet());
   nestApp.enableCors();

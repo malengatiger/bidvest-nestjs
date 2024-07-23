@@ -48,7 +48,9 @@ export class DivisionsService {
         Logger.debug(`${mm} division exists, ignored:  💧 ${division.name}`);
       }
     });
-    Logger.debug(`${mm} Organizations uploaded successfully: ${list.length}`);
+    Logger.debug(
+      `${mm} BidvestDivisions uploaded successfully: ${list.length}`
+    );
     return list;
   }
   async getDivisions(): Promise<any> {
@@ -69,7 +71,7 @@ export class DivisionsService {
       "divisionId"
     );
     if (!division) {
-      throw new Error(`Division does not exist: ${divisionId}`);
+      throw new Error(`Division does not exist : ${divisionId}`);
     }
 
     const orgBidvestDivision = {
@@ -86,7 +88,7 @@ export class DivisionsService {
     Logger.debug(
       `${mm} OrganizationDivision added: ${JSON.stringify(orgBidvestDivision)}`
     );
-    Logger.debug(`OrganizationDivision add at path: ${res.path}`)
+    Logger.debug(`${mm} OrganizationDivision added at path: ${res.path}`)
     return orgBidvestDivision;
   }
   async getOrganizationDivisions(organizationId: string): Promise<any> {

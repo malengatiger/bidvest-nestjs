@@ -10,9 +10,11 @@ import { ElapsedTimeMiddleware } from './middleware/elapsed.middleware';
 import { FirestoreManager } from './services/firestore_manager';
 import { FirebaseManager } from './services/firebase_manager';
 import { AuthMiddleware } from './middleware/auth.middleware';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     UserModule,
     OnboardingModule,
     OrganizationsModule,
@@ -25,6 +27,6 @@ import { AuthMiddleware } from './middleware/auth.middleware';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(ElapsedTimeMiddleware).forRoutes("*");
-    consumer.apply(AuthMiddleware).forRoutes('*');
+    consumer.apply(AuthMiddleware).forRoutes("*");
   }
 }
