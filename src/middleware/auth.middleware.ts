@@ -16,26 +16,14 @@ export class AuthMiddleware implements NestMiddleware {
   async use(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     const authToken = req.headers.authorization;
 
-    Logger.log(`${mm} request url: ${req.baseUrl} `);
-    // Logger.log(`${mm} hostname: ${req.hostname} `);
-    // Logger.log(`${mm} NODE_ENV: ${process.env.NODE_ENV} `);
-    // Logger.log(`${mm} LOCAL_PORT: ${process.env.LOCAL_PORT} `);
-
-    
     if (process.env.NODE_ENV == 'development') {
       Logger.debug(
-        `${mm} 🔴 letting you into the club without a ticket! 🔵 🔵 🔵 `,
+        `${mm} 🔴 🔴 🔴 🔴 🔴 letting you into the club without a ticket! 🔵 🔵 🔵 `
       );
       next();
       return;
     }
-    if (req.baseUrl == '/api/v1/getCountries') {
-      Logger.debug(
-        `${mm} 🔴 letting you get countries without a ticket! 🔵 🔵 🔵 `,
-      );
-      next();
-      return;
-    }
+    
     if (!authToken) {
       Logger.log(`${mm} authentication token not found in request header 🔴`);
       return res.status(401).json({
@@ -45,15 +33,12 @@ export class AuthMiddleware implements NestMiddleware {
       });
     }
     try {
-      // Logger.log(`${mm} authentication starting: 🔵 authToken: ${authToken}`);
       // Verify the authentication token using Firebase Admin SDK
       //await this.fbService.initializeFirebase(); Bearer
       const token = authToken.substring(7);
-      // Logger.log(`${mm} authentication continua: 🔵 token: ${token}`);
-
       const decodedToken = await admin.auth().verifyIdToken(token);
       req.user = decodedToken; // Set the authenticated user in the request object
-      // Logger.log(`${mm} authentication seems OK; ✅ req: ${req}`);
+      Logger.log(`${mm} authentication seems OK; ✅ req: ${req}`);
 
       next();
     } catch (error) {
