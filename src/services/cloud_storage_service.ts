@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 import * as path from "path";
 import * as dotenv from "dotenv";
 
-const mm = "☁️ ☁️ ☁️ CloudStorageService ☁️ ☁️ ☁️";
+const mm = "🔆🔆🔆 CloudStorageService 🔆🔆🔆";
 
 @Injectable()
 export class CloudStorageService {
@@ -60,6 +60,8 @@ export class CloudStorageService {
         return "image/gif";
       case ".pdf":
         return "application/pdf";
+      case ".json":
+        return "application/json";
       case ".doc":
       case ".docx":
         return "application/msword";

@@ -16,6 +16,15 @@ export class AuthMiddleware implements NestMiddleware {
   async use(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     const authToken = req.headers.authorization;
 
+    Logger.debug(`${mm} incoming url: ${req.originalUrl}`);
+    if (req.originalUrl.includes('Bot')) {
+      Logger.debug(
+        `${mm} 🔴 🔴 letting you into the club without a ticket! 
+        🔵 🔵  ... because you want to play with Bots 🔵 `
+      );
+      next();
+      return;
+    }
     if (process.env.NODE_ENV == 'development') {
       Logger.debug(
         `${mm} 🔴 🔴 🔴 🔴 🔴 letting you into the club without a ticket! 🔵 🔵 🔵 `

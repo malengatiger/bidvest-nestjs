@@ -72,7 +72,7 @@ export class OrganizationsService {
       position: "",
     };
     Logger.debug(`${mm} admin user to authenticate: ${JSON.stringify(user)}`);
-    await this.userManager.createUser(user);
+    await this.userManager.createUser(user,'Users');
   }
 
   async addOrganizations(jsonData: any[]) {

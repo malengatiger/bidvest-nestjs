@@ -57,7 +57,7 @@ export class UserManager {
       throw new Error("Failed to create user.");
     }
   }
-  async createUser(user: User): Promise<any> {
+  async createUser(user: any, collection: string): Promise<any> {
     try {
       console.log(`${mm} ... creating user: ${JSON.stringify(user)}`); // Create user in Firebase Authentication
       if (!this.db) {
@@ -89,9 +89,12 @@ export class UserManager {
       }
       const passwd = user.password;
       user.password = "";
-      const userRef = await this.firestoreManager.createDocument("Users", user);
+      const userRef = await this.firestoreManager.createDocument(
+        collection,
+        user
+      );
       Logger.log(
-        `${mm} Firestore User created successfully: ${JSON.stringify(userRef)}`
+        `${mm} Firestore User created successfully: ${JSON.stringify(userRef.path)}`
       );
       user.password = passwd;
       return user;
@@ -142,9 +145,48 @@ export class UserManager {
       j.organizationId = organizationId;
       j.organizationName = org.name;
       const mUser = await this.getUserByEmail(j.email);
-      Logger.debug(`${mm} user found by email? ${mUser.email}`);
+      Logger.debug(`${mm} user found by email? ${mUser}`);
       if (!mUser) {
-        const user = await this.createUser(j);
+        const user = await this.createUser(j, "Users");
+        Logger.debug(`${mm} record processed: ${JSON.stringify(j)}`);
+        list.push(user);
+      } else {
+        Logger.error(`${mm} user exists already: ${mUser.name}`);
+      }
+    }
+    return list;
+  }
+  async addBidvestUsers(jsonData: any[], divisionId: string) {
+    Logger.debug(`${mm} addOrganizationUsers: ${JSON.stringify(jsonData)}`);
+    Logger.debug(`${mm} divisionId: ${divisionId}`);
+    let list = [];
+
+    for (const j of jsonData) {
+      j.date = new Date().toISOString();
+
+      const mUser = await this.getUserByEmail(j.email);
+      Logger.debug(`${mm} user found by email? ${mUser}`);
+      if (!mUser) {
+        const user = await this.createUser(j, "BidvestUsers");
+        Logger.debug(`${mm} record processed: ${JSON.stringify(j)}`);
+        list.push(user);
+      } else {
+        Logger.error(`${mm} user exists already: ${mUser.name}`);
+      }
+    }
+    return list;
+  }
+
+  async addCoachUsers(jsonData: any[]) {
+    Logger.debug(`${mm} addCoachUsers: ${JSON.stringify(jsonData)}`);
+    let list = [];
+
+    for (const j of jsonData) {
+      j.date = new Date().toISOString();
+      const mUser = await this.getUserByEmail(j.email);
+      Logger.debug(`${mm} user found by email? ${mUser}`);
+      if (!mUser) {
+        const user = await this.createUser(j, "CoachUsers");
         Logger.debug(`${mm} record processed: ${JSON.stringify(j)}`);
         list.push(user);
       } else {
@@ -154,13 +196,46 @@ export class UserManager {
     return list;
   }
   async getUserByEmail(email: string): Promise<any> {
+    let user = null;
+    try {
+      // Get user from Firestore
+      if (!this.db) {
+        this.db = admin.firestore();
+      }
+      user = this.checkUser(email, "Users");
+      if (!user) {
+        user = this.checkUser(email, "BidvestUsers");
+      }
+      if (!user) {
+        user = this.checkUser(email, "CoachUsers");
+      }
+      return user;
+    } catch (error) {
+      Logger.error("Error getting user:", error);
+      throw new Error("Failed to get user.");
+    }
+  }
+  async checkUser(email: string, collection: string): Promise<any> {
+    const userDoc = await this.db
+      .collection(collection)
+      .where("email", "==", email)
+      .limit(1)
+      .get();
+
+    if (userDoc.docs.length > 0) {
+      return userDoc.docs[0].data();
+    } else {
+      return null;
+    }
+  }
+  async getBidvestUserByEmail(email: string): Promise<any> {
     try {
       // Get user from Firestore
       if (!this.db) {
         this.db = admin.firestore();
       }
       const userDoc = await this.db
-        .collection("Users")
+        .collection("BidvestUsers")
         .where("email", "==", email)
         .limit(1)
         .get();
@@ -175,14 +250,14 @@ export class UserManager {
       throw new Error("Failed to get user.");
     }
   }
-  async getBidvestUserByEmail(email: string): Promise<any> {
+  async getCoachUserByEmail(email: string): Promise<any> {
     try {
       // Get user from Firestore
       if (!this.db) {
         this.db = admin.firestore();
       }
       const userDoc = await this.db
-        .collection("BidvestUsers")
+        .collection("CoachUsers")
         .where("email", "==", email)
         .limit(1)
         .get();

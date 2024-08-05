@@ -11,6 +11,8 @@ import { FirestoreManager } from './services/firestore_manager';
 import { FirebaseManager } from './services/firebase_manager';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { ConfigModule } from '@nestjs/config';
+import { SurveysModule } from './surveys/surveys.module';
+import { BotModule } from './bot/bot.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { ConfigModule } from '@nestjs/config';
     OrganizationsModule,
     BrandingModule,
     DivisionsModule,
+    SurveysModule,
+    BotModule,
   ],
   controllers: [AppController],
   providers: [AppService, FirestoreManager, FirebaseManager],

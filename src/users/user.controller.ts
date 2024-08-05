@@ -24,7 +24,7 @@ export class UserController {
   @Post("/createUser")
   create(@Body() user: User) {
     try {
-      return this.userManager.createUser(user);
+      return this.userManager.createUser(user, 'Users');
     } catch (error) {
       throw new Error(`Failed to create user: ${error}`);
     }

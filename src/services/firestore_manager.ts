@@ -1,5 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { isAfter } from "date-fns";
 import * as admin from "firebase-admin";
+import { query, orderBy, limit } from "firebase/firestore";
 const mm = "🔴 🔴 🔴 FirestoreManager 🔴 ";
 
 @Injectable()
@@ -41,7 +43,7 @@ export class FirestoreManager {
     }
     const docRef = this.db
       .collection(collectionName)
-      .where(parameter, "==", id)
+      .where(parameter, "==", id);
 
     const querySnapshot = await docRef.get();
     const docs = querySnapshot.docs.length;
@@ -65,9 +67,6 @@ export class FirestoreManager {
       }
       const mx = this.db.collection(collectionName);
       const res = await mx.add(data);
-      Logger.debug(
-        `${mm} ... document created successfully: ${JSON.stringify(res.path)}`
-      );
       return res;
     } catch (error) {
       Logger.error(`${mm} Error creating document:`, error);
@@ -103,6 +102,47 @@ export class FirestoreManager {
       id: doc.id,
       ...doc.data(),
     }));
+    return documents;
+  }
+  async getDocumentsWithLimit(
+    collectionName: string,
+    limitDocs: number,
+    orderBy: string
+  ): Promise<any[]> {
+    Logger.debug(
+      `${mm} getDocumentsWithLimit: collectionName: ${collectionName}  🔴 limit: ${limitDocs}`
+    );
+    if (!collectionName) {
+      throw new Error(`Missing collection name`);
+    }
+    if (!limitDocs) {
+      throw new Error(`Missing limit`);
+    }
+    if (!isNaN(limitDocs)) {
+      Logger.debug(`${mm} limitDocs IS a number: ${limitDocs}`);
+    } else {
+      return [];
+    }
+    if (!this.db) {
+      this.db = admin.firestore();
+    }
+
+    const colRef = this.db.collection(collectionName);
+
+    const num = parseInt(`${limitDocs}`);
+    colRef.orderBy(orderBy, "desc").limit(num);
+
+    const querySnapshot = await colRef.get();
+
+    const documents = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    Logger.debug(
+      `${mm} ... getDocumentsWithLimit, found: 🥬 ${documents.length} videos in firestore! 🥬 ... returning ...`
+    );
+
     return documents;
   }
 

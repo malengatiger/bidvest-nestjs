@@ -3,7 +3,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import * as admin from "firebase-admin";
 import { MyUtils } from "./my-utils";
 import { Constants } from "./constants";
-const mm = "🍑 🍑 🍑 FirebaseManager 🍑 ";
+const mm = "🅿️  FirebaseManager 🍑 ";
 
 @Injectable()
 export class FirebaseManager {
@@ -13,22 +13,22 @@ export class FirebaseManager {
     const message: admin.messaging.Message = {
       topic: Constants.admin,
       data: {
-        message: "🍑 🍑 Bidvest Backend App started OK! 🅿️ 🅿️ 🅿️",
+        message: "🅿️  Bidvest Backend App started OK! 🅿️",
         date: date,
       },
       notification: {
         title: "Bidvest Backend",
-        body: `Bidvest Backend App is running good, Boss! : ${date}
-        )} 🅿️ 🅿️ 🅿️`,
+        body: ` 🥬 🥬 🥬 🥬 Bidvest Backend App is running good, Boss! : ${date}
+        )} 🅿️ `,
       },
     };
 
     try {
       const response = await admin.messaging().send(message);
       Logger.debug(
-        `${mm} 🅿️ 🅿️ 🅿️  Successfully sent FCM message : \n🚺 🚺 🚺 ${JSON.stringify(
+        `${mm} 🅿️  Successfully sent FCM message : 🚺 ${JSON.stringify(
           message
-        )} \n🚺 🚺 🚺 FCM response: ${response}`
+        )} 🚺 FCM response: ${response}`
       );
     } catch (error) {
       console.error("Error sending message:", error);
@@ -45,16 +45,16 @@ export class FirebaseManager {
       notification: {
         title: "Bidvest Backend",
         body: `${msg} : ${date}
-        )} 🅿️ 🅿️ 🅿️`,
+        )} 🅿️ `,
       },
     };
 
     try {
       const response = await admin.messaging().send(message);
       Logger.debug(
-        `${mm} 🅿️ 🅿️ 🅿️  Successfully sent FCM message : \n🚺 🚺 🚺 ${
+        `${mm} 🅿️ Successfully sent FCM message : 🚺 ${JSON.stringify(
           message
-        } `
+        )} response: ${JSON.stringify(response)}`
       );
     } catch (error) {
       console.error("Error sending message:", error);

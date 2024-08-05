@@ -4,7 +4,6 @@ import {
   Post,
   Get,
   Query,
-  Res,
   UploadedFile,
   UseInterceptors,
   Body,
@@ -14,11 +13,8 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { CloudStorageService } from "src/services/cloud_storage_service";
 import { UserManager } from "src/services/user_manager";
 
-import * as admin from "firebase-admin";
-import { Constants } from "src/services/constants";
 import * as csvParser from "csv-parser"; // Import csv-parser
 import { Readable } from "stream";
-import * as fs from "fs";
 import { UploadResponse } from "src/models/models";
 import { FirestoreManager } from "src/services/firestore_manager";
 const mm = "🥦🥦 OrganizationsController 🥦🥦";
@@ -31,6 +27,7 @@ export class OrganizationsController {
     private readonly userManager: UserManager,
     private readonly firestore: FirestoreManager
   ) {}
+
 
   @Post("/uploadOrganizationUsers")
   @UseInterceptors(FileInterceptor("file"))
@@ -59,6 +56,39 @@ export class OrganizationsController {
             jsonData,
             organizationId
           );
+          Logger.debug(`${mm} Organization users uploaded successfully`);
+        })
+        .on("error", (error) => {
+          Logger.error(`${mm} Error parsing CSV:`, error);
+          throw error;
+        });
+    } catch (error) {
+      Logger.error(`${mm} Error uploading file:`, error);
+      throw error;
+    }
+    return list;
+  }
+  @Post("/uploadCoachUsers")
+  @UseInterceptors(FileInterceptor("file"))
+  async uploadCoachUsers(@UploadedFile() file: Express.Multer.File) {
+    let list = [];
+    try {
+      const fileBuffer = file.buffer;
+      // Create a Readable stream from the file buffer
+      const readable = Readable.from(fileBuffer);
+      const jsonData: any[] = [];
+      // Parse the CSV data and convert it to JSON
+      readable
+        .pipe(csvParser())
+        .on("data", (row) => {
+          // Convert the row to a JSON object
+          const jsonObject = Object.fromEntries(
+            Object.entries(row).map(([key, value]) => [key, value])
+          );
+          jsonData.push(jsonObject);
+        })
+        .on("end", async () => {
+          list = await this.userManager.addCoachUsers(jsonData);
           Logger.debug(`${mm} Organization users uploaded successfully`);
         })
         .on("error", (error) => {
@@ -132,7 +162,7 @@ export class OrganizationsController {
       // Upload the file to Firebase Cloud Storage
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
-        fileName,
+        fileName
       );
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
@@ -171,7 +201,7 @@ export class OrganizationsController {
       // Upload the file to Firebase Cloud Storage
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
-        fileName,
+        fileName
       );
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
@@ -210,7 +240,7 @@ export class OrganizationsController {
       // Upload the file to Firebase Cloud Storage
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
-        fileName,
+        fileName
       );
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
@@ -245,7 +275,7 @@ export class OrganizationsController {
       // Upload the file to Firebase Cloud Storage
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
-        fileName,
+        fileName
       );
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);
@@ -277,7 +307,7 @@ export class OrganizationsController {
       // Upload the file to Firebase Cloud Storage
       const publicUrl = await this.cloudStorageService.uploadFile(
         fileBuffer,
-        fileName,
+        fileName
       );
 
       Logger.debug(`${mm} File uploaded to Cloud Storage, url: \n${publicUrl}`);

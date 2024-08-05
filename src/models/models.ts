@@ -18,6 +18,15 @@ export interface BidvestUser {
   date: string;
   divisionId: string
 }
+export interface CoachUser {
+  name: string;
+  email: string;
+  cellphone: string;
+  userId: string;
+  password: string;
+  date: string;
+  divisionId: string;
+}
 
 export interface Organization {
   name: string;
@@ -86,6 +95,48 @@ export interface Usage {
 
 export interface UploadResponse {
   downloadUrl: string;
+  date: string;
+}
+
+export interface SurveyTemplate {
+  surveyTemplateId: string,
+  name: string,
+  date: string;
+  divisionId: string;      // may be null 
+  sections: SurveySection[]
+}
+export interface SurveySection {
+  name: string;
+  sectionId: string;
+  surveyTemplateId: string;
+  rows: SurveyRow[];
+}
+export interface SurveyRow {
+  surveyTemplateId: string;
+  surveyRowId: string;
+  sectionId: string;
+  text: string;
+  rating: number; //rating between 1 and 5
+  date: string;
+}
+
+export interface SurveyResponse {
+  surveyTemplateId: string;
+  surveyId: string;
+  date: string;
+  divisionId: string;
+  divisionName: string;
+  organizationName: string;
+  organizationId: string;
+  surveyTemplate: SurveyTemplate;
+}
+
+export interface AggregateSurveyResponse {
+  surveyTemplateId: string;
+  totalRating: number;
+  totalRows: number;
+  averageRating: number;
+  medianRating: number;
   date: string;
 }
 

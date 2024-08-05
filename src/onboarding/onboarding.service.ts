@@ -32,7 +32,7 @@ export class OnboardingService {
 
   async addUser(user: User): Promise<any> {
     try {
-      const mUser = await this.userManager.createUser(user);
+      const mUser = await this.userManager.createUser(user, "Users");
       console.log(`${mm} User added successfully: ${JSON.stringify(mUser)}`);
       return mUser;
     } catch (error) {
@@ -80,21 +80,9 @@ export class OnboardingService {
     jsonData: any[],
     organizationId: string
   ): Promise<any> {
-    const list = [];
+    const list = 
+    await this.userManager.addOrganizationUsers(jsonData, organizationId);
     try {
-      jsonData.forEach(async (user) => {
-        user.date = new Date().toISOString();
-        user.organizationId = organizationId;
-        try {
-          const m = await this.firestore.createDocument("Users", user);
-          list.push(m);
-          Logger.debug(`${mm} user added: ${JSON.stringify(m)}`);
-        } catch (error) {
-          Logger.debug(
-            `${mm} user add failed. ignored: ${JSON.stringify(user)}`
-          );
-        }
-      });
     } catch (error) {
       console.error("Error adding users:", error);
       throw error;
@@ -115,20 +103,19 @@ export class OnboardingService {
         throw new Error(`${mm} Division does not exist`);
       }
 
-      jsonData.forEach(async (j) => {
-        j.divisionId = divisionId;
-        j.date = new Date().toISOString();
-
-        try {
-          const m = await this.addBidvestUser(j);
-          users.push(j as BidvestUser);
-          Logger.debug(`${mm} user added: ${JSON.stringify(m)}`);
-        } catch (error) {
-          Logger.debug(`${mm} user add failed. ignored: ${JSON.stringify(j)}`);
-        }
-      });
+      await this.userManager.addBidvestUsers(jsonData, divisionId);
     } catch (e) {
       Logger.debug(`${mm} error adding user`);
+    }
+    return users;
+  }
+  async addCoachUsers(jsonData: any[]): Promise<any[]> {
+    const users: BidvestUser[] = [];
+
+    try {
+      await this.userManager.addCoachUsers(jsonData);
+    } catch (e) {
+      Logger.debug(`${mm} error adding coach`);
     }
     return users;
   }
