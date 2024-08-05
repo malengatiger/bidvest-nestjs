@@ -1,0 +1,29 @@
+2677  git remote -v\n
+ 2678  ssh -T git@github.com
+ 2679  eval "$(ssh-agent -s)"
+ 2680  ssh -T git@github.com
+ 2681  ssh-add ~/.ssh/i_account2
+ 2682  ssh -T git@github.com
+ 2683  ssh-add ~/.ssh/i_account1
+ 2684  ssh -T git@github.com
+ 2685  ssh-add ~/.ssh/i_account3
+ 2686  code ~/.ssh/config
+ 2687  ssh -T git@github.com
+ 2688  git remote set-url git@github.com:iqlab-africa/starter-example.git
+ 2689  git remote set-url origin git@github.com:iqlab-africa/starter-example.git
+ 2690  ssh -vT git@github.com\n
+ 2691  git push
+
+
+🎽🎽🎽🎽 STEPS TO PUSH CODE
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/i_account2 && ssh -T git@github.com
+
+🍎🍎🍎🍎 COMMAND TO PUSH CODE
+./push.sh ~/.ssh/i_account1 git@github.com:malengatiger/bidvest-nestjs.git "🔵 🔵 🔵 CHECKPOINT CHARLIE 1"
+
+curl -X POST "https://cloud.robocorp.com/api/v1/workspaces/926b8a1c-1df9-4643-b253-739cab73e459/processes/27e881fa-6982-4029-bf42-926f7589be57/process-runs" \
+--header "Authorization: RC-WSKEY my4yJcvbVxiaqxxxomkzFVrBbv4oMIhLKy50epnO6P9snhRKFCC6GmajQPypPwvTdvkCAVCzU1TR57A8bMSIZWMnsSjEN3dmXKLaNlWd6aRqIDexjSJHpPBTPqDJJ57yo"
+
+curl "https://cloud.robocorp.com/api/v1/workspaces/926b8a1c-1df9-4643-b253-739cab73e459/outputs?process_run_id=796262b4-49c9-43f2-ba27-829fd49dd21e" \
+--header "Authorization: RC-WSKEY my4yJcvbVxiaqxxxomkzFVrBbv4oMIhLKy50epnO6P9snhRKFCC6GmajQPypPwvTdvkCAVCzU1TR57A8bMSIZWMnsSjEN3dmXKLaNlWd6aRqIDexjSJHpPBTPqDJJ57yo"
