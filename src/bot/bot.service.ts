@@ -3,7 +3,8 @@ import { CloudStorageService } from "src/services/cloud_storage_service";
 import { FirestoreManager } from "src/services/firestore_manager";
 import * as fs from "fs";
 import { randomInt } from "crypto";
-const mm = "🔴 🔴 BotService:";
+
+const mm = "🔴 🔴 🔴 BotService 🔴";
 
 @Injectable()
 export class BotService {
@@ -13,6 +14,8 @@ export class BotService {
   ) {}
 
   async addBotVideos(videos: any[]) {
+    Logger.debug(`${mm} addBotVideos: ${videos.length} 💧💧`);
+
     const jsonList = [];
 
     await this.fillList(videos, jsonList);
@@ -25,18 +28,26 @@ export class BotService {
       { videos: [] }
     );
 
-    console.log(`${mm} vidObj: ${vidObj} ... 💧💧 handleFile ...`);
+    Logger.debug(`${mm} vidObj has ${vidObj.videos.length} 
+      video objects to be written to Firestore and CloudStorage`);
+
     const downloadUrl = await this.handleFile(vidObj);
 
-    return downloadUrl;
+    return {
+      date: new Date().toISOString(),
+      videosUploaded: videos.length,
+      downloadUrl: downloadUrl,
+    };
   }
 
   private async fillList(videos: any[], jsonList: any[]) {
+    let count = 0;
     videos.forEach(async (v) => {
       const jsonData = JSON.stringify(v);
       jsonList.push(jsonData);
       const res = await this.firestoreManager.createDocument("BotVideos", v);
-      console.log(`${mm}  video added to firestore: ${res.path}`);
+      count++;
+      console.log(`${mm}  video #${count} added to firestore: 🌀 ${res.path}`);
     });
   }
 
@@ -44,9 +55,12 @@ export class BotService {
     const fileName = `${new Date().toISOString()}_${randomInt(1000)}.json`;
 
     const jsonString = JSON.stringify(vidObj, null, 4);
-   
+
     fs.writeFileSync(fileName, JSON.stringify(vidObj, null, 4));
-    Logger.debug(`\n\n${mm} stringified: ${jsonString} 💧💧💧 file written OK 🥬 🥬 🥬 🥬\n`);
+    Logger.debug(
+      `\n\n${mm} stringified json data file written OK 🥬 ${jsonString.length} 🥬
+      \n🥬 fileName:${fileName}`
+    );
 
     const downloadUrl = await this.cloudService.uploadFile(
       Buffer.from(jsonString),
@@ -63,25 +77,26 @@ export class BotService {
         numDate: new Date().getTime(),
       }
     );
-    console.log(
-      `${mm} VideoBotCloudStorageLink added to firestore: 🥬  🥬 🥬 path: ${result.path}\n`
+    Logger.log(
+      `${mm} VideoBotCloudStorageLink added to firestore: 🥬 🥬 🥬 path: ${result.path}\n`
     );
     return downloadUrl;
   }
 
   async getAllBotVideos(): Promise<any[]> {
     const res = await this.firestoreManager.getAllDocuments("BotVideos");
-    console.log(`${mm}   getAllBotVideos, res: ${JSON.stringify(res)}`);
+    Logger.debug(`${mm}   getAllBotVideos, res: ${JSON.stringify(res)}`);
 
     return res;
   }
   async getBotVideos(orderBy: string, limit: number): Promise<any[]> {
-    console.log(`${mm}  getBotVideos: limit: ${limit}`);
+    Logger.debug(`${mm}  getBotVideos: limit: ${limit}`);
     const res = await this.firestoreManager.getDocumentsWithLimit(
       "BotVideos",
       limit,
       orderBy
     );
+
     return res;
   }
 }

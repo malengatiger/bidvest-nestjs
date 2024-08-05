@@ -3,30 +3,27 @@ import * as admin from "firebase-admin";
 import * as path from "path";
 import * as dotenv from "dotenv";
 
-const mm = "🔆🔆🔆 CloudStorageService 🔆🔆🔆";
+const mm = "🔆🔆 CloudStorageService 🔆";
 
 @Injectable()
 export class CloudStorageService {
   private storage: admin.storage.Storage;
 
   constructor() {
-    dotenv.config(); // Load environment variables from .env
-    const bucketName = process.env.FIREBASE_STORAGE_BUCKET; 
-    Logger.debug(`${mm} ... bucketName: ${bucketName}`);
+    dotenv.config(); 
   }
-
+  
   async uploadFile(
     file: Buffer,
     fileName: string,
   ): Promise<string> {
     try {
-      Logger.debug(
-        `${mm} ... uploading file to Cloud Storage }`
-      );
+     
       if (!this.storage) {
         this.storage = admin.storage();
       }
-      const bucketName = process.env.FIREBASE_STORAGE_BUCKET; // Get bucket name from .env
+      const bucketName = process.env.FIREBASE_STORAGE_BUCKET;
+      Logger.debug(`${mm} uploading to Cloud Storage : ${bucketName}`);
       const fileRef = this.storage.bucket(bucketName).file(fileName);
       const contentType = this.extractContentType(fileName);
       await fileRef.save(file, {
@@ -37,7 +34,7 @@ export class CloudStorageService {
       });
       const [metadata] = await fileRef.getMetadata();
       Logger.log(
-        `${mm} ... file uploaded successfully: ${fileName} - mediaLink: ${metadata.mediaLink}`
+        `${mm} File uploaded to Cloud Storage successfully: ${fileName} \n mediaLink: ${metadata.mediaLink}`
       );
       const link = metadata.mediaLink;
       Logger.debug(`${mm} ... file link: ${link}`);
